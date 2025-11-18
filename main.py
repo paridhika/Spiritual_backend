@@ -61,10 +61,9 @@ messages = {}
 @app.route('/chat', methods=['POST'])
 def chat():
     
-    data = request.json
-    user_input = data.get('message', '').strip()
-    session_id = data.get('session_id', '1')
-    
+    user_input = request.data.decode('utf-8').strip()
+    # session_id = request.headers.get("X-Session-ID", "1")
+    session_id = 1
     if not user_input:
         return jsonify({"error": "Message cannot be empty"}), 400
     
