@@ -43,7 +43,7 @@ Key Areas of Support:
 Always prioritize the user's emotional safety and wellbeing. If you sense serious mental health concerns, gently encourage professional support while still offering compassionate guidance.
 """
 
-# Store conversations by session ID
+# Store messages by session ID
 messages = {}
 
 # @app.route('/')
@@ -67,8 +67,8 @@ def chat():
     if not user_input:
         return jsonify({"error": "Message cannot be empty"}), 400
     
-    # Initialize conversation for new sessions
-    if session_id not in conversations:
+    # Initialize messages for new sessions
+    if session_id not in messages:
         messages[session_id] = [
             {"role": "system", "content": SYSTEM_PROMPT}
         ]
