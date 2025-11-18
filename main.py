@@ -4,9 +4,11 @@ import openai
 from openai import OpenAI
 # Initialize Flask
 from flask_cors import CORS
+print("DEBUG OPENAI KEY:", os.getenv("OPENAI_API_KEY"))
+
 app = Flask(__name__)
 CORS(app, origins=["http://localhost:8081"])
-print("DEBUG OPENAI KEY:", os.getenv("OPENAI_API_KEY"))
+
 # Initialize OpenAI client
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
