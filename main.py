@@ -40,7 +40,7 @@ Always prioritize the user's emotional safety and wellbeing. If you sense seriou
 """
 
 # Store conversations by session ID
-conversations = {}
+messages = {}
 
 @app.route('/')
 def home():
@@ -55,79 +55,60 @@ def home():
 
 @app.route('/chat', methods=['POST'])
 def chat():
+    
+    data = request.json
+    user_input = data.get('message', '').strip()
+    session_id = data.get('session_id', 'default')
+    
+    if not user_input:
+        return jsonify({"error": "Message cannot be empty"}), 400
+    
+    # Initialize conversation for new sessions
+    if session_id not in conversations:
+        messages[session_id] = [
+            {"role": "system", "content": SYSTEM_PROMPT}
+        ]
+    
+    # Add user message to conversation
+    messages[session_id].append({"role": "user", "content": user_input})
+    
     try:
-        data = request.json
-        user_input = data.get('message', '').strip()
-        session_id = data.get('session_id', 'default')
-        model = data.get('model', 'gpt-4o')
-        max_tokens = data.get('max_tokens', 800)
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=messages[session_id],
+            temperature=0.7,
+            max_tokens=1000,
+            top_p=0.9,
+        )
         
-        if not user_input:
-            return jsonify({"error": "Message cannot be empty"}), 400
+        reply = response.choices[0].message.content
         
-        # Initialize conversation for new sessions
-        if session_id not in conversations:
-            conversations[session_id] = [
-                {"role": "system", "content": SYSTEM_PROMPT}
-            ]
+        # Add assistant reply to conversation
+        messages[session_id].append({"role": "assistant", "content": reply})
         
-        # Add user message to conversation
-        conversations[session_id].append({"role": "user", "content": user_input})
-        
-        # Try models in order of preference
-        models_to_try = [model, "gpt-4o-mini", "gpt-3.5-turbo"]
-        
-        for current_model in models_to_try:
-            try:
-                response = client.chat.completions.create(
-                    model=current_model,
-                    messages=conversations[session_id],
-                    temperature=0.7,
-                    max_tokens=max_tokens,
-                    top_p=0.9,
-                )
-                
-                reply = response.choices[0].message.content
-                
-                # Add assistant reply to conversation
-                conversations[session_id].append({"role": "assistant", "content": reply})
-                
-                return jsonify({
-                    "response": reply,
-                    "model_used": current_model,
-                    "session_id": session_id,
-                    "conversation_length": len(conversations[session_id])
-                })
-                
-            except Exception as e:
-                print(f"⚠️ Failed with {current_model}: {e}")
-                continue
-        
-        return jsonify({"error": "All available models failed"}), 500
+        return jsonify({"response": reply})
         
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        print(f"⚠️ Failed with {current_model}: {e}")
+        continue
+    
 
-@app.route('/reset', methods=['POST'])
-def reset_conversation():
-    try:
-        data = request.json
-        session_id = data.get('session_id', 'default')
+# @app.route('/reset', methods=['POST'])
+# def reset_conversation():
+#     try:
+#         data = request.json
+#         session_id = data.get('session_id', 'default')
         
-        if session_id in conversations:
-            conversations[session_id] = [
-                {"role": "system", "content": SYSTEM_PROMPT}
-            ]
-            return jsonify({"message": "Conversation reset successfully", "session_id": session_id})
-        else:
-            return jsonify({"message": "No active conversation found", "session_id": session_id})
+#         if session_id in conversations:
+#             conversations[session_id] = [
+#                 {"role": "system", "content": SYSTEM_PROMPT}
+#             ]
+#             return jsonify({"message": "Conversation reset successfully", "session_id": session_id})
+#         else:
+#             return jsonify({"message": "No active conversation found", "session_id": session_id})
             
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/health', methods=['GET'])
-def health_check():
-    return jsonify({"status": "healthy"}), 200
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 8080))
