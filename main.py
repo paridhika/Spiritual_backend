@@ -8,7 +8,8 @@ app = Flask(__name__)
 CORS(app, origins=["http://localhost:8081"])
 
 # Initialize OpenAI client
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+openai.api_key = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=openai.api_key)
 
 # Enhanced system prompt for spiritual and emotional therapy
 SYSTEM_PROMPT = """
