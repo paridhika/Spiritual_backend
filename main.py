@@ -46,23 +46,23 @@ Always prioritize the user's emotional safety and wellbeing. If you sense seriou
 # Store conversations by session ID
 messages = {}
 
-@app.route('/')
-def home():
-    return jsonify({
-        "message": "🕉️ Spiritual & Emotional Therapy API",
-        "version": "1.0",
-        "endpoints": {
-            "/chat": "POST - Send a message",
-            "/reset": "POST - Reset conversation"
-        }
-    })
+# @app.route('/')
+# def home():
+#     return jsonify({
+#         "message": "🕉️ Spiritual & Emotional Therapy API",
+#         "version": "1.0",
+#         "endpoints": {
+#             "/chat": "POST - Send a message",
+#             "/reset": "POST - Reset conversation"
+#         }
+#     })
 
 @app.route('/chat', methods=['POST'])
 def chat():
     
     data = request.json
     user_input = data.get('message', '').strip()
-    session_id = data.get('session_id', 'default')
+    session_id = data.get('session_id', '1')
     
     if not user_input:
         return jsonify({"error": "Message cannot be empty"}), 400
