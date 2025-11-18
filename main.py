@@ -89,8 +89,7 @@ def chat():
         return jsonify({"response": reply})
         
     except Exception as e:
-        print(f"⚠️ Failed with {current_model}: {e}")
-        continue
+        print(f"⚠️ Failed with model: {e}")
     
 
 # @app.route('/reset', methods=['POST'])
